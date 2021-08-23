@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 public class TwitterProducer {
 
@@ -19,6 +18,7 @@ public class TwitterProducer {
     }
 
     private void start() {
+
         // client will put the extracted msgs into a blocking queue
         BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(1000);
 
@@ -26,21 +26,27 @@ public class TwitterProducer {
         Client client = HosebirdClient.createClient(msgQueue);
         client.connect();
 
+        // create kafka producer
+        MyKafkaProducer producer = new MyKafkaProducer();
+
         // test the client
-        // msgQueue will now start being filled with messages/events. Read from these queues and log the msg.
+        // msgQueue will now start being filled with messages. Read from these queues and log the msg.
         while (!client.isDone()) {
-            String msg = null;
+            producer.produce(msgQueue);
+            /*String msg = null;
             try {
                 msg = msgQueue.poll(5, TimeUnit.SECONDS);
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 client.stop();
             }
             if(msg != null) {
                 logger.info(msg);
-            }
+            }*/
         }
         logger.info("End of application");
+        producer.close();
     }
 
 
