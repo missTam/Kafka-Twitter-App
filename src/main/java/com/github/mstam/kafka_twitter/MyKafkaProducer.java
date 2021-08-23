@@ -22,6 +22,19 @@ public class MyKafkaProducer {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        // make producer safe
+        // producer is idempotent
+        properties.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
+
+        // idempotency includes by default:
+        // all in sync replicas (partition leader included) have to send an acknowledgement back to the producer that they have the data
+        properties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
+        // in case of failure, producer will resend the record up to x number of times
+        properties.setProperty(ProducerConfig.RETRIES_CONFIG, Integer.toString(Integer.MAX_VALUE));
+        // max no of unacknowledged requests the client will send on a single connection before blocking
+        properties.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5");
+
         producer = new KafkaProducer<>(properties);
     }
 
