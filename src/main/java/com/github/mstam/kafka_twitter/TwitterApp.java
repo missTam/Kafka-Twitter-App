@@ -6,15 +6,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-public class TwitterProducer {
+public class TwitterApp {
 
-    Logger logger = LoggerFactory.getLogger(TwitterProducer.class.getName());
-    
-    public TwitterProducer() {}
+    Logger logger = LoggerFactory.getLogger(TwitterApp.class.getName());
+
+    public TwitterApp() {}
 
     public static void main(String[] args) {
-        new TwitterProducer().start();
+        new TwitterApp().start();
     }
 
     private void start() {
@@ -29,11 +30,24 @@ public class TwitterProducer {
         // create kafka producer
         MyKafkaProducer producer = new MyKafkaProducer();
 
+        /*
+        * Shutdown Hook
+        * An initialized un-started thread.
+        * When the virtual machine begins its shutdown sequence it starts all registered shutdown hooks
+        * in unspecified order and lets them run concurrently. Once all hooks have finished, VM halts.
+         */
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("application stopping..");
+            logger.info("twitter (hbc) client shutting down..");
+            client.stop();
+            logger.info("closing kafka producer..");
+            producer.close();
+        }));
+
         // test the client
         // msgQueue will now start being filled with messages. Read from these queues and log the msg.
         while (!client.isDone()) {
-            producer.produce(msgQueue);
-            /*String msg = null;
+            String msg = null;
             try {
                 msg = msgQueue.poll(5, TimeUnit.SECONDS);
 
@@ -42,8 +56,9 @@ public class TwitterProducer {
                 client.stop();
             }
             if(msg != null) {
+                producer.publish(msg);
                 logger.info(msg);
-            }*/
+            }
         }
         logger.info("End of application");
         producer.close();

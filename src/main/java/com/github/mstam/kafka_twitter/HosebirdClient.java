@@ -28,6 +28,9 @@ public class HosebirdClient {
     private static String token;
     private static String tokenSecret;
 
+    // Setting up a term we want to track, e.g. all tweets containing "kafka"
+    private static List<String> terms = Lists.newArrayList("kafka");
+
     private static void readCredentials() {
 
         try (InputStream input = HosebirdClient.class.getClassLoader().getResourceAsStream("credentials.properties")) {
@@ -63,8 +66,6 @@ public class HosebirdClient {
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
 
-        // Setting up a term we want to track, e.g. all tweets containing "kafka"
-        List<String> terms = Lists.newArrayList("java");
         hosebirdEndpoint.trackTerms(terms);
 
         Authentication hosebirdAuth = new OAuth1(consumerKey, consumerSecret, token, tokenSecret);

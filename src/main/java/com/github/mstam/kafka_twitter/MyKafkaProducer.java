@@ -5,19 +5,18 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.concurrent.BlockingQueue;
 
 public class MyKafkaProducer {
 
     private static Logger logger = LoggerFactory.getLogger(MyKafkaProducer.class);
 
     private static final String BOOTSTRAP_SERVERS = "127.0.0.1:9092";
+    private static final String TOPIC = "twitter_topic";
     // Define producer configs
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
     // define kafka producer with specified properties
-    private KafkaProducer<String, String> producer;
+    private final KafkaProducer<String, String> producer;
 
     public MyKafkaProducer() {
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
@@ -26,35 +25,21 @@ public class MyKafkaProducer {
         producer = new KafkaProducer<>(properties);
     }
 
-    public void produce(BlockingQueue<String> msgQueue) {
+    public void publish(String tweet) {
 
-        Iterator<String> tweets = msgQueue.iterator();
+        // create record with the twitter message and publish it to kafka
+        ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, null, tweet);
 
-        // as long as there are twitter messages in the queue...
-        while(tweets.hasNext()) {
+        // publish data - async
+        producer.send(record, new Callback() {
 
-            // create record with twitter messages and keep publishing them to kafka in real-time
-            ProducerRecord<String, String> record = new ProducerRecord<>("first_topic", tweets.next());
-
-            // publish data - async
-            producer.send(record, new Callback() {
-
-                @Override
-                public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-                    if(e == null) {
-                        // success
-                        logger.info("Recieved new metadata. \n" +
-                                "Topic: " + recordMetadata.topic() +  "\n" +
-                                "Partition: " + recordMetadata.partition() + "\n" +
-                                "Offset " + recordMetadata.offset() + "\n" +
-                                "Timestamp " + recordMetadata.timestamp());
-                    } else {
-                        logger.error("Error while publishing..", e);
-                    }
+            @Override
+            public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+                if (e != null) {
+                    logger.error("Error while publishing tweet.", e);
                 }
-            });
-        }
-
+            }
+        });
     }
 
     public void close() {
