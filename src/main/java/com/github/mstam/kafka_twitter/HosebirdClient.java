@@ -29,7 +29,7 @@ public class HosebirdClient {
     private static String tokenSecret;
 
     // Setting up a term we want to track, e.g. all tweets containing "kafka"
-    private static List<String> terms = Lists.newArrayList("kafka");
+    private static List<String> terms = Lists.newArrayList("science", "technology", "innovation", "startup");
 
     private static void readCredentials() {
 
@@ -42,7 +42,7 @@ public class HosebirdClient {
                 return;
             }
 
-            // load a properties file from class path, inside static method
+            // load properties file from class path
             properties.load(input);
 
             consumerKey = properties.getProperty("consumerKey");
@@ -70,8 +70,6 @@ public class HosebirdClient {
 
         Authentication hosebirdAuth = new OAuth1(consumerKey, consumerSecret, token, tokenSecret);
 
-        // TEST
-
         /* create client
          * it connects to stream host
          * authenticates with provided OAuth credentials
@@ -85,8 +83,6 @@ public class HosebirdClient {
                 .endpoint(hosebirdEndpoint)
                 .processor(new StringDelimitedProcessor(msgQueue));
 
-        Client hosebirdClient = builder.build();
-
-        return hosebirdClient;
+        return builder.build();
     }
 }

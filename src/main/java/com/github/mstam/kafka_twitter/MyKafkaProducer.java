@@ -23,8 +23,7 @@ public class MyKafkaProducer {
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
-        // make producer safe
-        // producer is idempotent
+        // make producer safe - idempotent
         properties.setProperty(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
 
         // idempotency includes by default:
@@ -34,6 +33,15 @@ public class MyKafkaProducer {
         properties.setProperty(ProducerConfig.RETRIES_CONFIG, Integer.toString(Integer.MAX_VALUE));
         // max no of unacknowledged requests the client will send on a single connection before blocking
         properties.setProperty(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "5");
+
+        // increase throughput of producer at the cost of some CPU
+        // compress txt heavy data
+        properties.setProperty(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy");
+        // introduce small delay to increase chances of msgs being sent together in a batch
+        // --> ultimately get more tweets at kafka at a time
+        properties.setProperty(ProducerConfig.LINGER_MS_CONFIG, "20");
+        // increase batch size to 32 KB
+        properties.setProperty(ProducerConfig.BATCH_SIZE_CONFIG, Integer.toString(32*1024));
 
         producer = new KafkaProducer<>(properties);
     }

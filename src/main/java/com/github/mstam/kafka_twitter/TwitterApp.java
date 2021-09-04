@@ -20,10 +20,10 @@ public class TwitterApp {
 
     private void start() {
 
-        // client will put the extracted msgs into a blocking queue
+        // client puts extracted msgs into a blocking queue
         BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(1000);
 
-        // create client for consuming twitter API
+        // create client for consuming twitter API & start
         Client client = HosebirdClient.createClient(msgQueue);
         client.connect();
 
@@ -50,7 +50,6 @@ public class TwitterApp {
             String msg = null;
             try {
                 msg = msgQueue.poll(5, TimeUnit.SECONDS);
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 client.stop();
