@@ -62,6 +62,4 @@ public class TwitterApp {
         logger.info("End of application");
         producer.close();
     }
-
-
 }
